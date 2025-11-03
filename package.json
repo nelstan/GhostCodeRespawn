@@ -1,0 +1,26 @@
+{
+  "name": "ghostcode",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@vueuse/core": "^13.5.0",
+    "vue": "^3.5.17",
+    "vue-router": "^4.6.3",
+    "vue-spinners": "^1.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "3.4",
+    "vite": "^7.0.6",
+    "vite-plugin-vue-devtools": "^7.7.7"
+  }
+}

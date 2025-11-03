@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body{
+    background-color: #111111;
+}
+
+@font-face {
+  font-family: 'Palatino-Linotype'; /* Название шрифта */
+  src: url('/GhostCode/src/assets/fonts/palatinolinotype_bold.ttf') format('ttf');
+  font-weight: 400; /* Обычное начертание */
+  font-display: swap;
+}
