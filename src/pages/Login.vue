@@ -8,95 +8,116 @@ const password = ref('')
 const error = ref('')
 const showWelcome = ref(false)
 const showPassword = ref(false)
-const loading = ref(false)
+
+const saveAuthData = (token, refreshToken, userData) => {
+  localStorage.setItem('accessToken', token)
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
+  localStorage.setItem('currentUser', JSON.stringify(userData))
+}
+
+const refreshAccessToken = async () => {
+  try {
+    const refreshToken = localStorage.getItem('refreshToken')
+    if (!refreshToken) throw new Error('No refresh token')
+
+    const response = await fetch('/api/tokens/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: refreshToken })
+    })
+
+    if (!response.ok) throw new Error('Token refresh failed')
+
+    const data = await response.json()
+    localStorage.setItem('accessToken', data.newJwt)
+    localStorage.setItem('refreshToken', data.newRefresh)
+    return data.newJwt
+  } catch (err) {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('currentUser')
+    router.push('/login')
+    return null
+  }
+}
+
+const apiRequest = async (url, options = {}) => {
+  const token = localStorage.getItem('accessToken')
+  const config = {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    credentials: 'include'
+  }
+
+  if (token) config.headers.Authorization = `Bearer ${token}`
+
+  let response = await fetch(url, config)
+
+  if (response.status === 401) {
+    const newToken = await refreshAccessToken()
+    if (newToken) {
+      config.headers.Authorization = `Bearer ${newToken}`
+      response = await fetch(url, config)
+    }
+  }
+
+  return response
+}
 
 const handleLogin = async () => {
   try {
     error.value = ''
-    loading.value = true
 
-    const loginResponse = await fetch('/api/accounts/login', {
+    const response = await apiRequest('/api/accounts/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         login: username.value,
         password: password.value
       })
     })
 
-    if (!loginResponse.ok) {
-      error.value = 'Неверный логин или пароль'
-      return
-    }
+    const contentType = response.headers.get('content-type')
+    let data = {}
 
-    const loginData = await loginResponse.json()
-
-    if (!loginData.refreshToken) {
-      error.value = 'Ошибка входа'
-      return
-    }
-
-    const tokenResponse = await fetch('/api/tokens/refresh', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token: loginData.refreshToken
-      })
-    })
-
-    if (!tokenResponse.ok) {
-      error.value = 'Ошибка получения токена'
-      return
-    }
-
-    const tokenData = await tokenResponse.json()
-
-    if (!tokenData.newJwt || tokenData.newJwt === 'undefined') {
-      error.value = 'Ошибка входа'
-      return
-    }
-
-    localStorage.setItem('accessToken', tokenData.newJwt)
-    localStorage.setItem('refreshToken', tokenData.newRefresh || loginData.refreshToken)
-
-    // Получаем данные пользователя после успешного входа
-    const userDataResponse = await fetch('/api/accounts/getData/' + (loginData.data?.id || ''), {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${tokenData.newJwt}`
+    if (contentType?.includes('application/json')) {
+      data = await response.json()
+    } else {
+      const text = await response.text()
+      if (!response.ok) {
+        error.value = `Ошибка сервера: ${response.status}`
+        return
       }
-    })
-
-const userData = {
-  username: username.value, // меняем эту строку
-  role: loginData.data?.role || 'user',
-  avatarLink: loginData.data?.avatarLink || '',
-  headerLink: loginData.data?.headerLink || ''
-}
-
-    if (userDataResponse.ok) {
-      const userDataResult = await userDataResponse.json()
-      userData.avatarLink = userDataResult.data?.avatarLink || ''
-      userData.headerLink = userDataResult.data?.headerLink || ''
     }
 
-    localStorage.setItem('currentUser', JSON.stringify(userData))
+    if (!response.ok) {
+      error.value = data.message || data.error || `Ошибка входа: ${response.status}`
+      return
+    }
 
-    if (loginData.recoveryCode) {
-      localStorage.setItem('recoveryCode', loginData.recoveryCode)
+    if (data.refreshToken || data.newJwt || data.token) {
+      saveAuthData(
+        data.newJwt || data.token,
+        data.refreshToken,
+        {
+          username: data.user?.username || username.value,
+          role: data.user?.role || 'user'
+        }
+      )
+    }
+
+    if (data.recoveryCode) {
+      localStorage.setItem('recoveryCode', data.recoveryCode)
     }
 
     showWelcome.value = true
     setTimeout(() => router.push('/GhostCode'), 1000)
-
   } catch (err) {
-    error.value = "Ошибка соединения с сервером"
-  } finally {
-    loading.value = false
+    error.value = err.name === 'SyntaxError' 
+      ? "Сервер вернул некорректный ответ" 
+      : "Ошибка соединения с сервером"
   }
 }
 </script>
@@ -163,7 +184,7 @@ const userData = {
         </div>
 
         <div class="flex justify-center mt-[8px]">
-          <router-link to="/forgetPassword" class="font-[400] text-[#D2EE5B] text-[14px] cursor-pointer">
+          <router-link to="forgetPassword" class="font-[400] text-[#D2EE5B] text-[14px] cursor-pointer">
             Забыли пароль?
           </router-link>
         </div>
@@ -171,10 +192,9 @@ const userData = {
         <div class="flex justify-center">
           <button 
             @click="handleLogin"
-            :disabled="loading"
-            class="w-[376px] h-[40px] bg-[#D2EE5B] border-[#819723] border-[1.5px] rounded-[10px] mt-[8px] cursor-pointer hover:bg-[#c5e04f] disabled:opacity-50 transition-colors"
+            class="w-[376px] h-[40px] bg-[#D2EE5B] border-[#819723] border-[1.5px] rounded-[10px] mt-[8px] cursor-pointer hover:bg-[#c5e04f] transition-colors"
           >
-            {{ loading ? 'Вход...' : 'Войти' }}
+            Войти
           </button>
         </div>
 

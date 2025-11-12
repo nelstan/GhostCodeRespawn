@@ -162,9 +162,7 @@ const getRoleDisplayName = (role) => {
             > 
           
           <div class="flex items-center ml-[25px] space-x-[15px]">
-            <RouterLink to="/Messages">
-              <img :src="sms" alt="sms" class="w-[25px] h-[25px] cursor-pointer"></img>
-            </RouterLink>
+            <img :src="sms" alt="sms" class="w-[25px] h-[25px] cursor-pointer">
             
             <div class="relative">
               <img :src="notifaction" alt="notifaction" class="w-[40px] h-[40px] cursor-pointer">
@@ -191,7 +189,7 @@ const getRoleDisplayName = (role) => {
 
       <div class="pt-[60px] flex justify-between px-[250px]">
         <div class="w-[800px] mt-[80px]">
-          <router-link to="/qwe" class="w-[350px] h-[30px] bg-[#D2EE5B] flex items-center justify-center rounded-[20px] font-exo text-[13px] font-[600] mt-[-50px] absolute">
+          <router-link to="/CreatePost" class="w-[350px] h-[30px] bg-[#D2EE5B] flex items-center justify-center rounded-[20px] font-exo text-[13px] font-[600] mt-[-50px] absolute">
             Создать пост
           </router-link>
           
@@ -219,6 +217,7 @@ const getRoleDisplayName = (role) => {
                     <p class="font-exo font-[600] bg-clip-text text-transparent bg-gradient-to-r from-[#FF7096] to-[#FF8FAB]">
                       size
                     </p>
+                    <!-- Бейдж роли для примера -->
                     <span class="text-blue-400 text-xs font-exo font-[500] bg-blue-400 bg-opacity-10 px-2 py-1 rounded-full">
                       Модератор
                     </span>
@@ -234,6 +233,7 @@ const getRoleDisplayName = (role) => {
           
           <img :src="lineAdmin" alt="divider" class="mx-[32px]">
 
+          <!-- Список пользователей -->
           <div class="p-[15px]">
             <userLeftMain />
             <userLeftMain />

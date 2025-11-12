@@ -15,6 +15,7 @@ const routes = [
     component: Messages,
   },
   {
+
     path: '/',
     name: 'Home',
     component: Home,
@@ -44,11 +45,14 @@ const routes = [
     name: 'Profile',
     component: Profile,
   },
+
   {
     path: '/enigma',
     name: 'Enigma',
     component: Enigma,
   },
+
+
 ];
 
 const router = createRouter({
@@ -56,4 +60,8 @@ const router = createRouter({
   routes,
 });
 
+
 export default router;
+
+ 
+
