@@ -12,7 +12,12 @@
 			@avatar-updated="handleAvatarUpdated"
 		/>
 		<ProfileInfo :user-data="userData" :current-user="currentUser" />
-		<ProfileTabs :user-data="userData" :current-user="currentUser" />
+		<ProfileTabs
+			:active-button="activeButton"
+			:user-data="userData"
+			:current-user="currentUser"
+			@set-active-button="setActiveButton"
+		/>
 	</div>
 </template>
 
@@ -24,10 +29,16 @@ import ProfileInfo from '@/components/profile/ProfileInfo.vue'
 import ProfileTabs from '@/components/profile/ProfileTabs.vue'
 import { onMounted, ref, watch } from 'vue'
 
+const activeButton = ref(0)
 const userData = ref(null)
 const currentUser = ref(null)
 
-const handleAvatarUpdated = async avatarLink => {
+const setActiveButton = index => {
+	activeButton.value = index
+}
+
+const handleAvatarUpdated = avatarLink => {
+	console.log('🔄 Обновление аватара в Profile.vue:', avatarLink)
 	if (userData.value) userData.value.avatarLink = avatarLink
 	const savedUser = localStorage.getItem('currentUser')
 	if (savedUser) {
@@ -38,7 +49,8 @@ const handleAvatarUpdated = async avatarLink => {
 	}
 }
 
-const handleHeaderUpdated = async headerLink => {
+const handleHeaderUpdated = headerLink => {
+	console.log('🔄 Обновление шапки в Profile.vue:', headerLink)
 	if (userData.value) userData.value.headerLink = headerLink
 	const savedUser = localStorage.getItem('currentUser')
 	if (savedUser) {
@@ -60,6 +72,7 @@ const loadUserData = async () => {
 			avatarLink: user.avatarLink || '',
 			headerLink: user.headerLink || '',
 		}
+		console.log('📥 Загружены данные пользователя:', userData.value)
 	}
 }
 

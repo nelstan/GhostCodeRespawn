@@ -1,10 +1,7 @@
 import { FileUploadService } from '@/utils/fileUpload.js'
 import { ref } from 'vue'
-import { useUser } from './useUser.js'
 
 export function useFileUpload() {
-	const { updateUserAvatar, updateUserHeader } = useUser()
-
 	const avatarFile = ref(null)
 	const headerFile = ref(null)
 	const avatarPreview = ref(null)
@@ -14,6 +11,12 @@ export function useFileUpload() {
 	const uploadError = ref(null)
 
 	const validateFile = file => {
+		console.log('🔍 Валидация файла:', {
+			name: file.name,
+			size: file.size,
+			type: file.type,
+		})
+
 		if (file.size > 5 * 1024 * 1024) {
 			throw new Error('Файл слишком большой. Максимальный размер: 5MB')
 		}
@@ -32,11 +35,13 @@ export function useFileUpload() {
 				const reader = new FileReader()
 				reader.onload = e => {
 					avatarPreview.value = e.target.result
+					console.log('📸 Preview аватара создан')
 				}
 				reader.readAsDataURL(file)
 				uploadError.value = null
 			} catch (err) {
 				uploadError.value = err.message
+				console.error('❌ Ошибка выбора аватара:', err)
 				alert(err.message)
 			}
 		}
@@ -51,11 +56,13 @@ export function useFileUpload() {
 				const reader = new FileReader()
 				reader.onload = e => {
 					headerPreview.value = e.target.result
+					console.log('📸 Preview шапки создан')
 				}
 				reader.readAsDataURL(file)
 				uploadError.value = null
 			} catch (err) {
 				uploadError.value = err.message
+				console.error('❌ Ошибка выбора шапки:', err)
 				alert(err.message)
 			}
 		}
@@ -71,8 +78,6 @@ export function useFileUpload() {
 			console.log('🔄 Начинаем загрузку аватара...')
 			const result = await FileUploadService.uploadAvatar(avatarFile.value)
 			console.log('✅ Аватар загружен:', result)
-
-			updateUserAvatar(result.link)
 
 			avatarFile.value = null
 			avatarPreview.value = null
@@ -96,8 +101,6 @@ export function useFileUpload() {
 			console.log('🔄 Начинаем загрузку шапки...')
 			const result = await FileUploadService.uploadHeader(headerFile.value)
 			console.log('✅ Шапка загружена:', result)
-
-			updateUserHeader(result.link)
 
 			headerFile.value = null
 			headerPreview.value = null

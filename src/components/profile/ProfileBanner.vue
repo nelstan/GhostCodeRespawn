@@ -14,6 +14,7 @@
 						:style="{
 							transform: `scale(${zoom}) translate(${position.x}%, ${position.y}%)`,
 						}"
+						@error="handleImageError"
 					/>
 					<div
 						class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center"
@@ -49,6 +50,7 @@
 						:style="{
 							transform: `scale(${zoom}) translate(${position.x}%, ${position.y}%)`,
 						}"
+						@error="handleImageError"
 					/>
 					<div
 						class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center"
@@ -184,7 +186,6 @@
 </template>
 
 <script setup>
-import { FileUploadService } from '@/utils/fileUpload.js'
 import { computed, onMounted, ref } from 'vue'
 import bannerItem from '/src/assets/баннер.png'
 
@@ -220,18 +221,69 @@ onMounted(() => {
 
 const loadHeaderFromStorage = () => {
 	const savedHeader = localStorage.getItem('userHeader')
-	if (savedHeader) {
+	const base64Header = localStorage.getItem('headerBase64')
+
+	console.log('📥 Загружаем шапку из localStorage:', {
+		savedHeader,
+		hasBase64: !!base64Header,
+	})
+
+	if (base64Header) {
+		savedHeaderLink.value = 'base64'
+	} else if (savedHeader) {
 		savedHeaderLink.value = savedHeader
 	}
 }
 
 const currentBannerUrl = computed(() => {
-	if (headerPreview.value) return headerPreview.value
-	if (savedHeaderLink.value) {
-		return `/api/content/link/headers/${savedHeaderLink.value}?t=${Date.now()}`
+	console.log('🔄 Формируем URL шапки:', {
+		headerPreview: !!headerPreview.value,
+		savedHeaderLink: savedHeaderLink.value,
+		userDataHeader: props.userData?.headerLink,
+		currentUserHeader: props.currentUser?.headerLink,
+	})
+
+	if (headerPreview.value) {
+		console.log('📸 Используем preview шапки')
+		return headerPreview.value
 	}
+
+	const base64Header = localStorage.getItem('headerBase64')
+	if (base64Header) {
+		console.log('🖼️ Используем base64 шапку')
+		return base64Header
+	}
+
+	const link =
+		savedHeaderLink.value ||
+		props.userData?.headerLink ||
+		props.currentUser?.headerLink
+	if (link && link !== 'base64') {
+		const url = `/api/content/link/headers/${link}`
+		console.log('🔗 Формируем URL шапки:', url)
+		return url
+	}
+
+	console.log('🖼️ Используем дефолтную шапку')
 	return bannerItem
 })
+
+const handleImageError = event => {
+	console.error('❌ Ошибка загрузки шапки:', {
+		src: event.target.src,
+		error: event,
+	})
+
+	// Пробуем загрузить без timestamp
+	if (event.target.src.includes('?')) {
+		const cleanUrl = event.target.src.split('?')[0]
+		console.log('🔄 Пробуем загрузить без timestamp:', cleanUrl)
+		event.target.src = cleanUrl
+	} else {
+		console.log('🔄 Используем дефолтную шапку из-за ошибки')
+		event.target.src = bannerItem
+	}
+}
 
 const triggerHeaderInput = () => {
 	headerInput.value?.click()
@@ -245,12 +297,19 @@ const handleHeaderSelect = event => {
 		reader.onload = e => {
 			headerPreview.value = e.target.result
 			showBannerEditor.value = true
+			console.log('📸 Preview шапки создан')
 		}
 		reader.readAsDataURL(file)
 	}
 }
 
 const validateFile = file => {
+	console.log('🔍 Валидация файла шапки:', {
+		name: file.name,
+		size: file.size,
+		type: file.type,
+	})
+
 	if (file.size > 5 * 1024 * 1024) {
 		alert('Файл слишком большой. Максимальный размер: 5MB')
 		return false
@@ -275,38 +334,73 @@ const cancelBannerEdit = () => {
 const saveBanner = async () => {
 	if (!headerFile.value) return
 
-	uploadingHeader.value = true
-
 	try {
-		console.log('Начинаем загрузку шапки...')
+		console.log('🔄 Начинаем сохранение шапки...')
+		console.log('📁 Файл для загрузки:', {
+			name: headerFile.value.name,
+			size: headerFile.value.size,
+			type: headerFile.value.type,
+		})
 
-		const result = await FileUploadService.uploadHeader(headerFile.value)
+		// ВРЕМЕННО: сохраняем base64 для тестирования
+		const reader = new FileReader()
+		reader.onload = e => {
+			const base64Data = e.target.result
+			localStorage.setItem('headerBase64', base64Data)
+			console.log('💾 Сохранили шапку как base64')
 
-		if (result.link) {
-			savedHeaderLink.value = result.link
-			localStorage.setItem('userHeader', result.link)
-
+			// Обновляем интерфейс
+			savedHeaderLink.value = 'base64'
 			const savedUser = localStorage.getItem('currentUser')
 			if (savedUser) {
 				const user = JSON.parse(savedUser)
-				user.headerLink = result.link
+				user.headerLink = 'base64'
 				localStorage.setItem('currentUser', JSON.stringify(user))
 			}
 
 			showBannerEditor.value = false
 			headerFile.value = null
 			headerPreview.value = null
-			emit('header-updated', result.link)
-
-			alert('Шапка профиля успешно обновлена!')
-		} else {
-			throw new Error('Неверный ответ от сервера')
+			emit('header-updated', 'base64')
+			alert('✅ Шапка профиля успешно обновлена (base64)!')
 		}
+		reader.readAsDataURL(headerFile.value)
+
+		// Оригинальная логика загрузки на сервер (закомментирована)
+		// uploadingHeader.value = true
+		// try {
+		//   console.log('Начинаем загрузку шапки...')
+		//   const result = await FileUploadService.uploadHeader(headerFile.value)
+		//
+		//   if (result.link) {
+		//     savedHeaderLink.value = result.link
+		//     localStorage.setItem('userHeader', result.link)
+		//
+		//     const savedUser = localStorage.getItem('currentUser')
+		//     if (savedUser) {
+		//       const user = JSON.parse(savedUser)
+		//       user.headerLink = result.link
+		//       localStorage.setItem('currentUser', JSON.stringify(user))
+		//     }
+		//
+		//     showBannerEditor.value = false
+		//     headerFile.value = null
+		//     headerPreview.value = null
+		//     emit('header-updated', result.link)
+		//
+		//     alert('Шапка профиля успешно обновлена!')
+		//   } else {
+		//     throw new Error('Неверный ответ от сервера')
+		//   }
+		// } catch (error) {
+		//   console.error('Ошибка загрузки шапки:', error)
+		//   alert('Ошибка загрузки шапки: ' + error.message)
+		// } finally {
+		//   uploadingHeader.value = false
+		// }
 	} catch (error) {
-		console.error('Ошибка загрузки шапки:', error)
-		alert('Ошибка загрузки шапки: ' + error.message)
-	} finally {
-		uploadingHeader.value = false
+		console.error('❌ Ошибка загрузки шапки:', error)
+		alert('❌ Ошибка загрузки шапки: ' + error.message)
 	}
 }
 </script>

@@ -53,7 +53,7 @@ const toggleCommentsVisibility = () => {
 
 <template>
 	<div
-		class="w-[1052px] bg-[#191919] rounded-[20px] mt-[0px] mx-auto ml-[377px] p-4"
+		class="w-[1052px] bg-[#191919] rounded-[20px] mt-[0px] mx-auto ml-[379px] p-4"
 	>
 		<div class="flex justify-between items-center mb-4">
 			<div class="flex items-center">

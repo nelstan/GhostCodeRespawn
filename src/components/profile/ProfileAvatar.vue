@@ -14,6 +14,7 @@
 						:style="{
 							transform: `scale(${zoom}) translate(${position.x}%, ${position.y}%)`,
 						}"
+						@error="handleImageError"
 					/>
 					<div
 						class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center"
@@ -49,6 +50,7 @@
 						:style="{
 							transform: `scale(${zoom}) translate(${position.x}%, ${position.y}%)`,
 						}"
+						@error="handleImageError"
 					/>
 					<div
 						class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center"
@@ -227,16 +229,59 @@ const loadAvatarFromStorage = () => {
 	const savedAvatar = localStorage.getItem('userAvatar')
 	if (savedAvatar) {
 		savedAvatarLink.value = savedAvatar
+		console.log('📥 Загружен аватар из localStorage:', savedAvatar)
 	}
 }
 
 const currentAvatarUrl = computed(() => {
-	if (avatarPreview.value) return avatarPreview.value
-	if (savedAvatarLink.value) {
-		return `/api/content/link/avatars/${savedAvatarLink.value}?t=${Date.now()}`
+	console.log('🔄 Формируем URL аватара:', {
+		avatarPreview: !!avatarPreview.value,
+		savedAvatarLink: savedAvatarLink.value,
+		userDataAvatar: props.userData?.avatarLink,
+		currentUserAvatar: props.currentUser?.avatarLink,
+	})
+
+	if (avatarPreview.value) {
+		console.log('📸 Используем preview аватара')
+		return avatarPreview.value
 	}
+
+	const base64Avatar = localStorage.getItem('avatarBase64')
+	if (base64Avatar) {
+		console.log('🖼️ Используем base64 аватар')
+		return base64Avatar
+	}
+
+	const link =
+		savedAvatarLink.value ||
+		props.userData?.avatarLink ||
+		props.currentUser?.avatarLink
+	if (link && link !== 'base64') {
+		const url = `/api/content/link/avatars/${link}`
+		console.log('🔗 Формируем URL аватара:', url)
+		return url
+	}
+
+	console.log('🖼️ Используем дефолтный аватар')
 	return userAvatar
 })
+
+const handleImageError = event => {
+	console.error('❌ Ошибка загрузки изображения:', {
+		src: event.target.src,
+		error: event,
+	})
+
+	// Пробуем загрузить без timestamp
+	if (event.target.src.includes('?')) {
+		const cleanUrl = event.target.src.split('?')[0]
+		console.log('🔄 Пробуем загрузить без timestamp:', cleanUrl)
+		event.target.src = cleanUrl
+	} else {
+		console.log('🔄 Используем дефолтный аватар из-за ошибки')
+		event.target.src = userAvatar
+	}
+}
 
 const triggerAvatarInput = () => {
 	avatarInput.value?.click()
@@ -268,26 +313,62 @@ const saveAvatar = async () => {
 	if (!avatarFile.value) return
 
 	try {
-		console.log('🔄 Сохранение аватара...')
-		const link = await uploadAvatar()
+		console.log('🔄 Начинаем сохранение аватара...')
+		console.log('📁 Файл для загрузки:', {
+			name: avatarFile.value.name,
+			size: avatarFile.value.size,
+			type: avatarFile.value.type,
+		})
 
-		if (link) {
-			savedAvatarLink.value = link
-			localStorage.setItem('userAvatar', link)
+		// ВРЕМЕННО: сохраняем base64 для тестирования
+		const reader = new FileReader()
+		reader.onload = e => {
+			const base64Data = e.target.result
+			localStorage.setItem('avatarBase64', base64Data)
+			console.log('💾 Сохранили аватар как base64')
 
+			// Обновляем интерфейс
+			savedAvatarLink.value = 'base64'
 			const savedUser = localStorage.getItem('currentUser')
 			if (savedUser) {
 				const user = JSON.parse(savedUser)
-				user.avatarLink = link
+				user.avatarLink = 'base64'
 				localStorage.setItem('currentUser', JSON.stringify(user))
 			}
 
 			showAvatarEditor.value = false
 			avatarFile.value = null
 			avatarPreview.value = null
-			emit('avatar-updated', link)
-			alert('✅ Аватар успешно обновлен!')
+			emit('avatar-updated', 'base64')
+			alert('✅ Аватар успешно обновлен (base64)!')
 		}
+		reader.readAsDataURL(avatarFile.value)
+
+		// Оригинальная логика загрузки на сервер (закомментирована)
+		// const link = await uploadAvatar()
+		// if (link) {
+		//   console.log('✅ Аватар загружен, ссылка:', link)
+		//   savedAvatarLink.value = link
+		//   localStorage.setItem('userAvatar', link)
+		//
+		//   const savedUser = localStorage.getItem('currentUser')
+		//   if (savedUser) {
+		//     const user = JSON.parse(savedUser)
+		//     user.avatarLink = link
+		//     localStorage.setItem('currentUser', JSON.stringify(user))
+		//     console.log('💾 Обновили currentUser в localStorage')
+		//   }
+		//
+		//   showAvatarEditor.value = false
+		//   avatarFile.value = null
+		//   avatarPreview.value = null
+		//   emit('avatar-updated', link)
+		//   console.log('🎉 Аватар успешно обновлен!')
+		//   alert('✅ Аватар успешно обновлен!')
+		// } else {
+		//   console.error('❌ uploadAvatar вернул null/undefined')
+		//   alert('❌ Ошибка: не получена ссылка на аватар')
+		// }
 	} catch (error) {
 		console.error('❌ Ошибка загрузки аватара:', error)
 		alert('❌ Ошибка загрузки аватара: ' + error.message)

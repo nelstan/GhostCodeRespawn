@@ -46,7 +46,8 @@
 				<img
 					:src="currentAvatarUrl"
 					alt="userAvatar"
-					class="absolute w-[29px] h-[29px] ml-[1630px] mt-[-42px]"
+					class="absolute w-[29px] h-[29px] ml-[1630px] mt-[-42px] rounded-full"
+					@error="handleAvatarError"
 				/>
 			</button>
 		</div>
@@ -71,6 +72,7 @@
 						:src="currentAvatarUrl"
 						alt="userAvatar"
 						class="w-[25px] h-[25px] rounded-full"
+						@error="handleAvatarError"
 					/>
 				</button>
 			</div>
@@ -89,22 +91,57 @@ const avatarLink = ref('')
 
 const loadAvatarFromStorage = () => {
 	const savedAvatar = localStorage.getItem('userAvatar')
-	if (savedAvatar) {
+	const base64Avatar = localStorage.getItem('avatarBase64')
+
+	console.log('📥 Загружаем аватар для шапки:', {
+		savedAvatar,
+		hasBase64: !!base64Avatar,
+	})
+
+	if (base64Avatar) {
+		avatarLink.value = 'base64'
+	} else if (savedAvatar) {
 		avatarLink.value = savedAvatar
 	}
 }
 
 const currentAvatarUrl = computed(() => {
-	if (avatarLink.value) {
-		return `/api/content/link/avatars/${avatarLink.value}?t=${Date.now()}`
+	if (avatarLink.value === 'base64') {
+		const base64 = localStorage.getItem('avatarBase64')
+		console.log('🖼️ Используем base64 аватар в шапке')
+		return base64 || defaultAvatar
 	}
+
+	if (avatarLink.value) {
+		const url = `/api/content/link/avatars/${avatarLink.value}`
+		console.log('🔗 Формируем URL аватара для шапки:', url)
+		return url
+	}
+
+	console.log('🖼️ Используем дефолтный аватар в шапке')
 	return defaultAvatar
 })
+
+const handleAvatarError = event => {
+	console.error('❌ Ошибка загрузки аватара в шапке:', event.target.src)
+	event.target.src = defaultAvatar
+}
 
 watch(
 	() => localStorage.getItem('userAvatar'),
 	newAvatar => {
+		console.log('🔄 Обновление аватара в шапке')
 		avatarLink.value = newAvatar || ''
+	}
+)
+
+watch(
+	() => localStorage.getItem('avatarBase64'),
+	newBase64 => {
+		if (newBase64) {
+			console.log('🔄 Обновление base64 аватара в шапке')
+			avatarLink.value = 'base64'
+		}
 	}
 )
 
