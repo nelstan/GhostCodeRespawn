@@ -2,7 +2,7 @@
   <div class="flex w-full h-[47px] border-b-2 border-[#242627] items-center fixed bg-[#111111] z-10">
     <img :src="logo" alt="logo" class="h-full ml-[250px]">
     
-    <div class="flex items-center ml-auto mr-[250px]">
+    <div class="flex items-center ml-auto mr-[320px]">
       <div class="relative">
         <input
           type="text"
