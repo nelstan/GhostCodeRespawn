@@ -19,16 +19,6 @@ const recoveryCode = ref('')
 const userRole = ref('')
 const userPosts = ref([])
 
-const customPosition = {
-	marginLeft: 'ml-[100px]',
-	marginTop: 'mt-[50px]',
-	marginRight: 'mr-0',
-	marginBottom: 'mb-8',
-	width: 'w-[1000px]',
-	height: 'min-h-[300px]',
-	position: 'relative',
-}
-
 const checkRecoveryCode = () => {
 	const storedRecoveryCode = localStorage.getItem('recoveryCode')
 
@@ -36,7 +26,6 @@ const checkRecoveryCode = () => {
 		recoveryCode.value = storedRecoveryCode
 		showRecoveryCode.value = true
 		localStorage.removeItem('recoveryCode')
-		console.log('Recovery code retrieved and removed from localStorage')
 	}
 }
 
@@ -122,12 +111,6 @@ const getUserAvatar = () => {
 </script>
 
 <template>
-	<UserPost
-		v-for="post in userPosts"
-		:key="post.id"
-		:post="post"
-		:position="customPosition"
-	/>
 	<div
 		v-if="showRecoveryCode"
 		class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
@@ -280,15 +263,14 @@ const getUserAvatar = () => {
 						<PostsComponents />
 					</div>
 
-					<div v-if="hasPosts" class="mt-16">
+					<div v-if="hasPosts" class="space-y-8">
 						<PostsComponents
 							v-for="post in userPosts"
 							:key="post.id"
 							:post="post"
+							:is-user-post="true"
 						/>
 					</div>
-
-					<PostsComponents v-else />
 				</div>
 
 				<div

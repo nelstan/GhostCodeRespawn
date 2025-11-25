@@ -275,10 +275,8 @@ const handleImageError = event => {
 	// Пробуем загрузить без timestamp
 	if (event.target.src.includes('?')) {
 		const cleanUrl = event.target.src.split('?')[0]
-		console.log('🔄 Пробуем загрузить без timestamp:', cleanUrl)
 		event.target.src = cleanUrl
 	} else {
-		console.log('🔄 Используем дефолтный аватар из-за ошибки')
 		event.target.src = userAvatar
 	}
 }
@@ -313,21 +311,18 @@ const saveAvatar = async () => {
 	if (!avatarFile.value) return
 
 	try {
-		console.log('🔄 Начинаем сохранение аватара...')
+		console.log('')
 		console.log('📁 Файл для загрузки:', {
 			name: avatarFile.value.name,
 			size: avatarFile.value.size,
 			type: avatarFile.value.type,
 		})
 
-		// ВРЕМЕННО: сохраняем base64 для тестирования
 		const reader = new FileReader()
 		reader.onload = e => {
 			const base64Data = e.target.result
 			localStorage.setItem('avatarBase64', base64Data)
-			console.log('💾 Сохранили аватар как base64')
 
-			// Обновляем интерфейс
 			savedAvatarLink.value = 'base64'
 			const savedUser = localStorage.getItem('currentUser')
 			if (savedUser) {
@@ -340,38 +335,10 @@ const saveAvatar = async () => {
 			avatarFile.value = null
 			avatarPreview.value = null
 			emit('avatar-updated', 'base64')
-			alert('✅ Аватар успешно обновлен (base64)!')
 		}
 		reader.readAsDataURL(avatarFile.value)
-
-		// Оригинальная логика загрузки на сервер (закомментирована)
-		// const link = await uploadAvatar()
-		// if (link) {
-		//   console.log('✅ Аватар загружен, ссылка:', link)
-		//   savedAvatarLink.value = link
-		//   localStorage.setItem('userAvatar', link)
-		//
-		//   const savedUser = localStorage.getItem('currentUser')
-		//   if (savedUser) {
-		//     const user = JSON.parse(savedUser)
-		//     user.avatarLink = link
-		//     localStorage.setItem('currentUser', JSON.stringify(user))
-		//     console.log('💾 Обновили currentUser в localStorage')
-		//   }
-		//
-		//   showAvatarEditor.value = false
-		//   avatarFile.value = null
-		//   avatarPreview.value = null
-		//   emit('avatar-updated', link)
-		//   console.log('🎉 Аватар успешно обновлен!')
-		//   alert('✅ Аватар успешно обновлен!')
-		// } else {
-		//   console.error('❌ uploadAvatar вернул null/undefined')
-		//   alert('❌ Ошибка: не получена ссылка на аватар')
-		// }
 	} catch (error) {
-		console.error('❌ Ошибка загрузки аватара:', error)
-		alert('❌ Ошибка загрузки аватара: ' + error.message)
+		console.log(error)
 	}
 }
 </script>

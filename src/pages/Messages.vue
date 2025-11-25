@@ -1,13 +1,9 @@
 <script setup>
-import ProfileMessage from '@/Message/ProfileMessage.vue';
-import HeaderGhostCode from './HeaderGhostCode.vue';
-import UserMessage from '@/Message/UserMessage.vue';
-import avatarByxesh from '/src/assets/avatarByxesh.jpg';
-import VectorL from '/src/assets/VectorL.png';
-import VectorT from '/src/assets/VectorT.png'
-import HeaderMessage from '@/Message/HeaderMessage.vue';
-import VectorD from '/src/assets/VectorD.png'
-import InputMessage from '@/Message/InputMessage.vue';
+import HeaderMessage from '@/Message/HeaderMessage.vue'
+import InputMessage from '@/Message/InputMessage.vue'
+import ProfileMessage from '@/Message/ProfileMessage.vue'
+import UserMessage from '@/Message/UserMessage.vue'
+import HeaderGhostCode from './HeaderGhostCode.vue'
 </script>
 
 <template>
@@ -26,6 +22,9 @@ import InputMessage from '@/Message/InputMessage.vue';
         <UserMessage/>
         <UserMessage/>
       </div> 
+      <div class='w-[500px] h-[300px] bg-[#202020]'>
+
+      </div>
       <ProfileMessage/>
     </div>
     <HeaderMessage/>

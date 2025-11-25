@@ -12,10 +12,9 @@ const props = defineProps({
 		type: Object,
 		default: () => ({}),
 	},
-	index: {
-		// Добавляем пропс для индекса поста
-		type: Number,
-		default: 0,
+	isUserPost: {
+		type: Boolean,
+		default: false,
 	},
 })
 
@@ -25,15 +24,6 @@ const showPulse = ref(false)
 const showComments = ref(false)
 const newComment = ref('')
 const comments = ref([])
-
-// Убираем фиксированные позиции и используем margin для отступов
-const postMargin = ref({
-	marginTop: 'mt-4', // Отступ между постами
-})
-
-const commentPosition = ref({
-	left: 'ml-[380px]',
-})
 
 const toggleLiked = () => {
 	isLiked.value = !isLiked.value
@@ -122,21 +112,17 @@ const formatDate = dateString => {
 }
 
 const authorName = computed(() => {
-	return (
-		props.post.author?.username ||
-		currentUser.value?.username ||
-		currentUser.value.username
-	)
+	return props.post.author?.username || currentUser.value?.username
 })
 
 const commentsCount = computed(() => comments.value.length)
 </script>
 
 <template>
-	<div :class="postMargin.marginTop">
-		<!-- Добавляем отступ здесь -->
+	<div :class="['post-container', { 'user-post': isUserPost }]">
 		<div
-			class="w-[1052px] h-[290px] rounded-[25px] border border-[#819723] ml-[380px] relative"
+			class="w-[1052px] rounded-[25px] border border-[#819723] ml-[380px] relative"
+			:class="isUserPost ? 'min-h-[290px] mb-8' : 'h-[290px]'"
 		>
 			<div class="flex items-start pt-[20px] pl-[20px]">
 				<img :src="avatarUser" alt="avatar" class="w-10 h-10" />
@@ -169,7 +155,7 @@ const commentsCount = computed(() => comments.value.length)
 				</div>
 			</div>
 
-			<div class="mt-1 px-[20px] absolute">
+			<div class="mt-1 px-[20px] pb-[20px]">
 				<h3 class="text-white font-bold">
 					{{ post.title || 'GhostCode - платформа анонимного кода' }}
 				</h3>
@@ -297,6 +283,16 @@ const commentsCount = computed(() => comments.value.length)
 			</div>
 		</div>
 
-		<CommentsComponents v-if="!post.id" class="mt-4 ml-[618px]" />
+		<CommentsComponents v-if="!post.id" />
 	</div>
 </template>
+
+<style scoped>
+.post-container {
+	transition: all 0.3s ease;
+}
+
+.user-post {
+	margin-top: 2rem;
+}
+</style>

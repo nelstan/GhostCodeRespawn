@@ -52,9 +52,7 @@ const toggleCommentsVisibility = () => {
 </script>
 
 <template>
-	<div
-		class="w-[1052px] bg-[#191919] rounded-[20px] mt-[0px] mx-auto ml-[379px] p-4"
-	>
+	<div class="w-[1052px] bg-[#191919] rounded-[20px] p-4 mt-[0px] ml-[377px]">
 		<div class="flex justify-between items-center mb-4">
 			<div class="flex items-center">
 				<h3 class="font-exo text-white font-[600] text-[16px]">Комментарии</h3>
