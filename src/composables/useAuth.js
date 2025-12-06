@@ -18,8 +18,7 @@ export function useAuth() {
 				throw new Error('No refresh token')
 			}
 
-			console.log('🔄 Обновление токена...')
-			const response = await fetch('/api/tokens/refresh', {
+			const response = await fetch('http://ghostcode.byxesh-dev.space/api/tokens/refresh', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -34,10 +33,8 @@ export function useAuth() {
 			const data = await response.json()
 			localStorage.setItem('accessToken', data.newJwt)
 			localStorage.setItem('refreshToken', data.newRefresh)
-			console.log('✅ Токен обновлен')
 			return data.newJwt
 		} catch (err) {
-			console.error('❌ Ошибка обновления токена:', err)
 			localStorage.removeItem('accessToken')
 			localStorage.removeItem('refreshToken')
 			localStorage.removeItem('currentUser')
@@ -49,13 +46,11 @@ export function useAuth() {
 	const apiRequest = async (url, options = {}) => {
 		let token = localStorage.getItem('accessToken')
 
-		// Определяем, является ли body FormData
 		const isFormData = options.body instanceof FormData
 
 		const config = {
 			...options,
 			headers: {
-				// Устанавливаем Content-Type только если это НЕ FormData
 				...(isFormData ? {} : { 'Content-Type': 'application/json' }),
 				...options.headers,
 			},
@@ -66,23 +61,13 @@ export function useAuth() {
 			config.headers['Authorization'] = `Bearer ${token}`
 		}
 
-		console.log('🔄 API Request:', {
-			url,
-			method: config.method,
-			headers: config.headers,
-		})
-
 		let response = await fetch(url, config)
 
-		console.log('📥 API Response:', { status: response.status, url })
-
 		if (response.status === 401) {
-			console.log('🔑 Токен истек, пробуем обновить...')
 			const newToken = await refreshAccessToken()
 			if (newToken) {
 				config.headers['Authorization'] = `Bearer ${newToken}`
 				response = await fetch(url, config)
-				console.log('🔄 Повторный запрос после обновления токена')
 			}
 		}
 

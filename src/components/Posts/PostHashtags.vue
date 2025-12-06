@@ -28,6 +28,6 @@ watch(hashtags, newHashtags => {
 		v-model="hashtags"
 		type="text"
 		placeholder="Введите хэштеги через запятую..."
-		class="w-[770px] h-[44px] bg-[#2F2F2F] border border-[#9AFE81] rounded-[10px] ml-[51px] mt-[15px] pl-[20px] outline-none text-[#FFFFFF] font-exo"
+		class="w-[770px] h-[44px] bg-[#2F2F2F] border border-[#9AFE81] rounded-[10px] ml-[96px] mt-[20px] pl-[20px] outline-none text-[#FFFFFF] font-exo"
 	/>
 </template>

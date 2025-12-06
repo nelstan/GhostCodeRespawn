@@ -1,6 +1,150 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import bannerItem from '/src/assets/баннер.png'
+
+const props = defineProps({
+	userData: Object,
+	currentUser: Object,
+})
+
+const emit = defineEmits(['header-updated'])
+
+const headerFile = ref(null)
+const headerPreview = ref(null)
+const uploadingHeader = ref(false)
+const headerInput = ref(null)
+const showBannerEditor = ref(false)
+
+const zoom = ref(1)
+const position = ref({ x: 0, y: 0 })
+const savedHeaderLink = ref('')
+
+const positionPresets = [
+	{ key: 'center', label: 'По центру', x: 0, y: 0 },
+	{ key: 'top', label: 'Вверх', x: 0, y: -25 },
+	{ key: 'bottom', label: 'Вниз', x: 0, y: 25 },
+	{ key: 'left', label: 'Влево', x: -25, y: 0 },
+	{ key: 'right', label: 'Вправо', x: 25, y: 0 },
+	{ key: 'top-left', label: 'Вверх-влево', x: -25, y: -25 },
+]
+
+onMounted(() => {
+	loadHeaderFromStorage()
+})
+
+const loadHeaderFromStorage = () => {
+	const savedHeader = localStorage.getItem('userHeader')
+	const base64Header = localStorage.getItem('headerBase64')
+
+	if (base64Header) {
+		savedHeaderLink.value = 'base64'
+	} else if (savedHeader) {
+		savedHeaderLink.value = savedHeader
+	}
+}
+
+const currentBannerUrl = computed(() => {
+	if (headerPreview.value) {
+		return headerPreview.value
+	}
+
+	const base64Header = localStorage.getItem('headerBase64')
+	if (base64Header) {
+		return base64Header
+	}
+
+	const link =
+		savedHeaderLink.value ||
+		props.userData?.headerLink ||
+		props.currentUser?.headerLink
+	if (link && link !== 'base64') {
+		const url = `/api/content/link/headers/${link}`
+		return url
+	}
+
+	return bannerItem
+})
+
+const handleImageError = event => {
+	if (event.target.src.includes('?')) {
+		const cleanUrl = event.target.src.split('?')[0]
+		event.target.src = cleanUrl
+	} else {
+		event.target.src = bannerItem
+	}
+}
+
+const triggerHeaderInput = () => {
+	headerInput.value?.click()
+}
+
+const handleHeaderSelect = event => {
+	const file = event.target.files[0]
+	if (file && validateFile(file)) {
+		headerFile.value = file
+		const reader = new FileReader()
+		reader.onload = e => {
+			headerPreview.value = e.target.result
+			showBannerEditor.value = true
+		}
+		reader.readAsDataURL(file)
+	}
+}
+
+const validateFile = file => {
+	if (file.size > 5 * 1024 * 1024) {
+		alert('Файл слишком большой. Максимальный размер: 5MB')
+		return false
+	}
+	if (!file.type.startsWith('image/')) {
+		alert('Пожалуйста, выберите изображение')
+		return false
+	}
+	return true
+}
+
+const setPosition = (x, y) => {
+	position.value = { x, y }
+}
+
+const cancelBannerEdit = () => {
+	showBannerEditor.value = false
+	headerFile.value = null
+	headerPreview.value = null
+}
+
+const saveBanner = async () => {
+	if (!headerFile.value) return
+
+	try {
+		const reader = new FileReader()
+		reader.onload = e => {
+			const base64Data = e.target.result
+			localStorage.setItem('headerBase64', base64Data)
+
+			savedHeaderLink.value = 'base64'
+			const savedUser = localStorage.getItem('currentUser')
+			if (savedUser) {
+				const user = JSON.parse(savedUser)
+				user.headerLink = 'base64'
+				localStorage.setItem('currentUser', JSON.stringify(user))
+			}
+
+			showBannerEditor.value = false
+			headerFile.value = null
+			headerPreview.value = null
+			emit('header-updated', 'base64')
+			alert('✅ Шапка профиля успешно обновлена (base64)!')
+		}
+		reader.readAsDataURL(headerFile.value)
+	} catch (error) {
+		alert('❌ Ошибка загрузки шапки: ' + error.message)
+	}
+}
+</script>
+
 <template>
 	<div class="relative">
-		<!-- Десктоп версия -->
 		<div class="sm:block hidden">
 			<div
 				class="absolute ml-[250px] mt-[45px] rounded-[5px] w-[1420px] h-[200px] cursor-pointer overflow-hidden"
@@ -36,7 +180,6 @@
 			</button>
 		</div>
 
-		<!-- Мобильная версия -->
 		<div class="sm:hidden block">
 			<div
 				class="mx-4 mt-4 rounded-[5px] h-[120px] cursor-pointer overflow-hidden"
@@ -80,7 +223,6 @@
 			class="hidden"
 		/>
 
-		<!-- Редактор (общий для обеих версий) -->
 		<div
 			v-if="showBannerEditor"
 			class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
@@ -184,223 +326,3 @@
 		</div>
 	</div>
 </template>
-
-<script setup>
-import { computed, onMounted, ref } from 'vue'
-import bannerItem from '/src/assets/баннер.png'
-
-const props = defineProps({
-	userData: Object,
-	currentUser: Object,
-})
-
-const emit = defineEmits(['header-updated'])
-
-const headerFile = ref(null)
-const headerPreview = ref(null)
-const uploadingHeader = ref(false)
-const headerInput = ref(null)
-const showBannerEditor = ref(false)
-
-const zoom = ref(1)
-const position = ref({ x: 0, y: 0 })
-const savedHeaderLink = ref('')
-
-const positionPresets = [
-	{ key: 'center', label: 'По центру', x: 0, y: 0 },
-	{ key: 'top', label: 'Вверх', x: 0, y: -25 },
-	{ key: 'bottom', label: 'Вниз', x: 0, y: 25 },
-	{ key: 'left', label: 'Влево', x: -25, y: 0 },
-	{ key: 'right', label: 'Вправо', x: 25, y: 0 },
-	{ key: 'top-left', label: 'Вверх-влево', x: -25, y: -25 },
-]
-
-onMounted(() => {
-	loadHeaderFromStorage()
-})
-
-const loadHeaderFromStorage = () => {
-	const savedHeader = localStorage.getItem('userHeader')
-	const base64Header = localStorage.getItem('headerBase64')
-
-	console.log('📥 Загружаем шапку из localStorage:', {
-		savedHeader,
-		hasBase64: !!base64Header,
-	})
-
-	if (base64Header) {
-		savedHeaderLink.value = 'base64'
-	} else if (savedHeader) {
-		savedHeaderLink.value = savedHeader
-	}
-}
-
-const currentBannerUrl = computed(() => {
-	console.log('🔄 Формируем URL шапки:', {
-		headerPreview: !!headerPreview.value,
-		savedHeaderLink: savedHeaderLink.value,
-		userDataHeader: props.userData?.headerLink,
-		currentUserHeader: props.currentUser?.headerLink,
-	})
-
-	if (headerPreview.value) {
-		console.log('📸 Используем preview шапки')
-		return headerPreview.value
-	}
-
-	const base64Header = localStorage.getItem('headerBase64')
-	if (base64Header) {
-		console.log('🖼️ Используем base64 шапку')
-		return base64Header
-	}
-
-	const link =
-		savedHeaderLink.value ||
-		props.userData?.headerLink ||
-		props.currentUser?.headerLink
-	if (link && link !== 'base64') {
-		const url = `/api/content/link/headers/${link}`
-		console.log('🔗 Формируем URL шапки:', url)
-		return url
-	}
-
-	console.log('🖼️ Используем дефолтную шапку')
-	return bannerItem
-})
-
-const handleImageError = event => {
-	console.error('❌ Ошибка загрузки шапки:', {
-		src: event.target.src,
-		error: event,
-	})
-
-	// Пробуем загрузить без timestamp
-	if (event.target.src.includes('?')) {
-		const cleanUrl = event.target.src.split('?')[0]
-		console.log('🔄 Пробуем загрузить без timestamp:', cleanUrl)
-		event.target.src = cleanUrl
-	} else {
-		console.log('🔄 Используем дефолтную шапку из-за ошибки')
-		event.target.src = bannerItem
-	}
-}
-
-const triggerHeaderInput = () => {
-	headerInput.value?.click()
-}
-
-const handleHeaderSelect = event => {
-	const file = event.target.files[0]
-	if (file && validateFile(file)) {
-		headerFile.value = file
-		const reader = new FileReader()
-		reader.onload = e => {
-			headerPreview.value = e.target.result
-			showBannerEditor.value = true
-			console.log('📸 Preview шапки создан')
-		}
-		reader.readAsDataURL(file)
-	}
-}
-
-const validateFile = file => {
-	console.log('🔍 Валидация файла шапки:', {
-		name: file.name,
-		size: file.size,
-		type: file.type,
-	})
-
-	if (file.size > 5 * 1024 * 1024) {
-		alert('Файл слишком большой. Максимальный размер: 5MB')
-		return false
-	}
-	if (!file.type.startsWith('image/')) {
-		alert('Пожалуйста, выберите изображение')
-		return false
-	}
-	return true
-}
-
-const setPosition = (x, y) => {
-	position.value = { x, y }
-}
-
-const cancelBannerEdit = () => {
-	showBannerEditor.value = false
-	headerFile.value = null
-	headerPreview.value = null
-}
-
-const saveBanner = async () => {
-	if (!headerFile.value) return
-
-	try {
-		console.log('🔄 Начинаем сохранение шапки...')
-		console.log('📁 Файл для загрузки:', {
-			name: headerFile.value.name,
-			size: headerFile.value.size,
-			type: headerFile.value.type,
-		})
-
-		// ВРЕМЕННО: сохраняем base64 для тестирования
-		const reader = new FileReader()
-		reader.onload = e => {
-			const base64Data = e.target.result
-			localStorage.setItem('headerBase64', base64Data)
-			console.log('💾 Сохранили шапку как base64')
-
-			// Обновляем интерфейс
-			savedHeaderLink.value = 'base64'
-			const savedUser = localStorage.getItem('currentUser')
-			if (savedUser) {
-				const user = JSON.parse(savedUser)
-				user.headerLink = 'base64'
-				localStorage.setItem('currentUser', JSON.stringify(user))
-			}
-
-			showBannerEditor.value = false
-			headerFile.value = null
-			headerPreview.value = null
-			emit('header-updated', 'base64')
-			alert('✅ Шапка профиля успешно обновлена (base64)!')
-		}
-		reader.readAsDataURL(headerFile.value)
-
-		// Оригинальная логика загрузки на сервер (закомментирована)
-		// uploadingHeader.value = true
-		// try {
-		//   console.log('Начинаем загрузку шапки...')
-		//   const result = await FileUploadService.uploadHeader(headerFile.value)
-		//
-		//   if (result.link) {
-		//     savedHeaderLink.value = result.link
-		//     localStorage.setItem('userHeader', result.link)
-		//
-		//     const savedUser = localStorage.getItem('currentUser')
-		//     if (savedUser) {
-		//       const user = JSON.parse(savedUser)
-		//       user.headerLink = result.link
-		//       localStorage.setItem('currentUser', JSON.stringify(user))
-		//     }
-		//
-		//     showBannerEditor.value = false
-		//     headerFile.value = null
-		//     headerPreview.value = null
-		//     emit('header-updated', result.link)
-		//
-		//     alert('Шапка профиля успешно обновлена!')
-		//   } else {
-		//     throw new Error('Неверный ответ от сервера')
-		//   }
-		// } catch (error) {
-		//   console.error('Ошибка загрузки шапки:', error)
-		//   alert('Ошибка загрузки шапки: ' + error.message)
-		// } finally {
-		//   uploadingHeader.value = false
-		// }
-	} catch (error) {
-		console.error('❌ Ошибка загрузки шапки:', error)
-		alert('❌ Ошибка загрузки шапки: ' + error.message)
-	}
-}
-</script>

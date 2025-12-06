@@ -229,26 +229,16 @@ const loadAvatarFromStorage = () => {
 	const savedAvatar = localStorage.getItem('userAvatar')
 	if (savedAvatar) {
 		savedAvatarLink.value = savedAvatar
-		console.log('📥 Загружен аватар из localStorage:', savedAvatar)
 	}
 }
 
 const currentAvatarUrl = computed(() => {
-	console.log('🔄 Формируем URL аватара:', {
-		avatarPreview: !!avatarPreview.value,
-		savedAvatarLink: savedAvatarLink.value,
-		userDataAvatar: props.userData?.avatarLink,
-		currentUserAvatar: props.currentUser?.avatarLink,
-	})
-
 	if (avatarPreview.value) {
-		console.log('📸 Используем preview аватара')
 		return avatarPreview.value
 	}
 
 	const base64Avatar = localStorage.getItem('avatarBase64')
 	if (base64Avatar) {
-		console.log('🖼️ Используем base64 аватар')
 		return base64Avatar
 	}
 
@@ -258,21 +248,13 @@ const currentAvatarUrl = computed(() => {
 		props.currentUser?.avatarLink
 	if (link && link !== 'base64') {
 		const url = `/api/content/link/avatars/${link}`
-		console.log('🔗 Формируем URL аватара:', url)
 		return url
 	}
 
-	console.log('🖼️ Используем дефолтный аватар')
 	return userAvatar
 })
 
 const handleImageError = event => {
-	console.error('❌ Ошибка загрузки изображения:', {
-		src: event.target.src,
-		error: event,
-	})
-
-	// Пробуем загрузить без timestamp
 	if (event.target.src.includes('?')) {
 		const cleanUrl = event.target.src.split('?')[0]
 		event.target.src = cleanUrl
@@ -311,13 +293,6 @@ const saveAvatar = async () => {
 	if (!avatarFile.value) return
 
 	try {
-		console.log('')
-		console.log('📁 Файл для загрузки:', {
-			name: avatarFile.value.name,
-			size: avatarFile.value.size,
-			type: avatarFile.value.type,
-		})
-
 		const reader = new FileReader()
 		reader.onload = e => {
 			const base64Data = e.target.result
@@ -337,8 +312,6 @@ const saveAvatar = async () => {
 			emit('avatar-updated', 'base64')
 		}
 		reader.readAsDataURL(avatarFile.value)
-	} catch (error) {
-		console.log(error)
-	}
+	} catch (error) {}
 }
 </script>

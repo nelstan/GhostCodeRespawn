@@ -44,7 +44,6 @@ const refreshAccessToken = async () => {
 const apiRequest = async (url, options = {}) => {
 	const token = localStorage.getItem('accessToken')
 
-	// Не устанавливаем Content-Type по умолчанию для FormData
 	const isFormData = options.body instanceof FormData
 	const config = {
 		...options,
@@ -54,7 +53,6 @@ const apiRequest = async (url, options = {}) => {
 		credentials: 'include',
 	}
 
-	// Добавляем Content-Type только если это не FormData
 	if (!isFormData && !config.headers['Content-Type']) {
 		config.headers['Content-Type'] = 'application/json'
 	}

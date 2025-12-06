@@ -13,17 +13,14 @@ const showWelcome = ref(false)
 const usernameError = ref('')
 const passwordError = ref('')
 
-// Функция проверки на английские символы и цифры
 const isEnglishOnly = text => {
-	return /^[A-Za-z0-9_]*$/.test(text) // Изменил + на * чтобы позволять пустую строку
+	return /^[A-Za-z0-9_]*$/.test(text)
 }
 
-// Функция проверки пароля (только английские буквы и цифры)
 const isValidPassword = password => {
 	return /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]*$/.test(password)
 }
 
-// Watcher для моментальной проверки username
 watch(username, newValue => {
 	if (newValue.trim() === '') {
 		usernameError.value = ''
@@ -35,7 +32,6 @@ watch(username, newValue => {
 	}
 })
 
-// Watcher для моментальной проверки password
 watch(password, newValue => {
 	if (newValue.trim() === '') {
 		passwordError.value = ''
@@ -53,42 +49,32 @@ const handleRegister = async () => {
 	try {
 		error.value = ''
 
-		// Проверяем данные перед отправкой
 		if (!username.value.trim() || !password.value.trim()) {
 			error.value = 'Заполните все поля'
 			return
 		}
 
-		// Проверка никнейма на английские символы
 		if (!isEnglishOnly(username.value)) {
 			error.value =
 				'Никнейм должен содержать только английские буквы, цифры и символ подчеркивания'
 			return
 		}
 
-		// Проверка пароля на длину
 		if (password.value.length < 6) {
 			error.value = 'Пароль должен быть не менее 6 символов'
 			return
 		}
 
-		// Проверка пароля на допустимые символы
 		if (!isValidPassword(password.value)) {
 			error.value =
 				'Пароль должен содержать только английские буквы, цифры и специальные символы'
 			return
 		}
 
-		// Если есть ошибки моментальной валидации
 		if (usernameError.value || passwordError.value) {
 			error.value = 'Исправьте ошибки в форме'
 			return
 		}
-
-		console.log('🔄 Отправка данных регистрации:', {
-			login: username.value,
-			password: password.value,
-		})
 
 		const response = await apiRequest('/api/accounts/register', {
 			method: 'POST',
@@ -98,15 +84,12 @@ const handleRegister = async () => {
 			}),
 		})
 
-		console.log('📥 Статус ответа:', response.status)
-
 		if (!response.ok) {
 			let errorMessage = `Ошибка регистрации: ${response.status}`
 
 			try {
 				const errorData = await response.json()
 				errorMessage = errorData.message || errorData.error || errorMessage
-				console.error('❌ Ошибка от сервера:', errorData)
 			} catch (e) {
 				const text = await response.text()
 				if (text) errorMessage = text
@@ -117,11 +100,9 @@ const handleRegister = async () => {
 		}
 
 		const data = await response.json()
-		console.log('✅ Успешный ответ:', data)
 
 		if (data.refreshToken) {
 			localStorage.setItem('refreshToken', data.refreshToken)
-			console.log('🔄 Refresh token сохранен')
 
 			try {
 				const tokenResponse = await fetch('/api/tokens/refresh', {
@@ -134,16 +115,10 @@ const handleRegister = async () => {
 
 				if (tokenResponse.ok) {
 					const tokenData = await tokenResponse.json()
-
 					localStorage.setItem('accessToken', tokenData.newJwt)
 					localStorage.setItem('refreshToken', tokenData.newRefresh)
-					console.log('🔑 Access token получен через refresh')
-				} else {
-					console.error('❌ Не удалось получить access token')
 				}
-			} catch (tokenError) {
-				console.error('❌ Ошибка при получении access token:', tokenError)
-			}
+			} catch (tokenError) {}
 		}
 
 		const userData = {
@@ -153,17 +128,14 @@ const handleRegister = async () => {
 			headerLink: data.data?.headerLink || '',
 		}
 		localStorage.setItem('currentUser', JSON.stringify(userData))
-		console.log('👤 Данные пользователя сохранены:', userData)
 
 		if (data.recoveryCode) {
 			localStorage.setItem('recoveryCode', data.recoveryCode)
-			console.log('🔐 Recovery code saved')
 		}
 
 		showWelcome.value = true
 		setTimeout(() => router.push('/Login'), 1000)
 	} catch (err) {
-		console.error('❌ Ошибка регистрации:', err)
 		error.value =
 			err.name === 'SyntaxError'
 				? 'Сервер вернул некорректный ответ'
