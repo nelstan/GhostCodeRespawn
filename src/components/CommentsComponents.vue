@@ -1,6 +1,7 @@
 <script setup>
 import userAvatar from '@/assets/qwerty.png'
 import AdminAvatar from '@/assets/ава.png'
+
 import { computed, onMounted, ref } from 'vue'
 import EditCommentModal from './EditCommentModal.vue'
 
@@ -238,6 +239,7 @@ onMounted(() => {
 
 <template>
 	<div class="w-[1052px] bg-[#191919] rounded-[20px] p-4 mt-[0px] ml-[377px]">
+
     <EditCommentModal
       v-if="showEditModal"
       :comment-id="editingCommentId"
@@ -246,6 +248,7 @@ onMounted(() => {
       @close="showEditModal = false"
     />
     
+
 		<div class="flex justify-between items-center mb-4">
 			<div class="flex items-center">
 				<h3 class="font-exo text-white font-[600] text-[16px]">Комментарии</h3>
@@ -264,6 +267,7 @@ onMounted(() => {
 		</div>
 
 		<div v-if="!commentsHidden">
+
       <div v-if="loading && comments.length === 0" class="text-center py-8">
         <p class="font-exo text-[#878787] text-[14px]">Загрузка комментариев...</p>
       </div>
@@ -272,6 +276,7 @@ onMounted(() => {
 				v-for="comment in comments"
 				:key="comment.id"
 				class="mt-[20px] first:mt-0 group relative"
+
 			>
 				<img
 					:src="comment.avatar"
@@ -294,6 +299,7 @@ onMounted(() => {
 				>
 					{{ comment.text }}
 				</p>
+
         
         <div v-if="isUserComment(comment)" class="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
           <div class="flex gap-2">
@@ -311,6 +317,7 @@ onMounted(() => {
             </button>
           </div>
         </div>
+
 			</div>
 
 			<div class="mt-6">

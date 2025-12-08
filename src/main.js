@@ -4,7 +4,7 @@ import './assets/main.css'
 import router from './router'
 
 const originalFetch = window.fetch
-window.fetch = async function (...args) {
+window.fetch = async function(...args) {
     const [url, options = {}] = args
 
     if (typeof url === 'string' && url.startsWith('/api')) {
@@ -47,7 +47,6 @@ window.fetch = async function (...args) {
                         }
                     }
                 } catch (refreshError) {}
-
                 localStorage.removeItem('accessToken')
                 localStorage.removeItem('refreshToken')
                 localStorage.removeItem('currentUser')
