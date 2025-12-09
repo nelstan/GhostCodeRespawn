@@ -53,58 +53,6 @@ MongoDB — текущая БД на стадии прототипировани
 
 PostgreSQL — планируемая миграция для production
 
-Общая схема
-text
-┌─────────────────────────────────────────────────────────────┐
-│                     Клиент (Vue.js/Nuxt)                    │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                     ┌─────────▼──────────┐
-                     │     YARP Gateway   │
-                     └─────────┬──────────┘
-                               │
-        ┌──────────────────────┼──────────────────────┐
-        │                      │                      │
-┌───────▼──────┐      ┌───────▼──────┐      ┌────────▼────────┐
-│  Auth Service│      │  Post Service│      │  Comment Service│
-│ (.NET Core)  │      │ (.NET Core)  │      │   (.NET Core)   │
-└───────┬──────┘      └───────┬──────┘      └────────┬────────┘
-        │                      │                      │
-        └──────────┬───────────┼──────────────────────┘
-                   │           │
-            ┌──────▼───────────▼──────┐
-            │     .NET Aspire         │
-            │   (Orchestration)       │
-            └──────┬───────────┬──────┘
-                   │           │
-            ┌──────▼──┐ ┌──────▼────┐
-            │  Redis  │ │  MongoDB  │
-            │  (Cache)│ │(Proto DB) │
-            └─────────┘ └───────────┘
-🛠️ Технологический стек
-Фронтенд
-json
-{
-  "framework": "Vue.js 3 + Nuxt.js",
-  "styling": "Tailwind CSS",
-  "state": "Pinia",
-  "routing": "Vue Router",
-  "language": "JavaScript (ES6+)"
-}
-Бэкенд
-json
-{
-  "runtime": ".NET 8+",
-  "architecture": "Microservices (Minimal API)",
-  "orchestration": ".NET Aspire",
-  "gateway": "YARP",
-  "cache": "Redis",
-  "database": {
-    "current": "MongoDB (prototype)",
-    "planned": "PostgreSQL"
-  },
-  "features": ["AOT Compilation", "Health Checks", "Distributed Tracing"]
-}
 Сеть и безопасность
 WebRTC для P2P соединений
 
@@ -123,40 +71,6 @@ Node.js 18+
 Docker (опционально, для Redis/MongoDB)
 
 Rust 1.70+ (для некоторых компонентов)
-
-Локальная разработка
-bash
-# Клонирование репозитория
-git clone https://github.com/yourusername/ghostcode.git
-cd ghostcode
-
-# Запуск инфраструктуры через Docker
-docker-compose up -d redis mongo
-
-# Запуск бэкенд-сервисов
-cd backend
-dotnet run --project Aspire.AppHost
-
-# Запуск фронтенда
-cd ../frontend
-npm install
-npm run dev
-
-# Открыть в браузере
-# Фронтенд: http://localhost:3000
-# Бэкенд API: http://localhost:5000
-# Aspire Dashboard: http://localhost:18888
-Production сборка
-bash
-# Фронтенд
-cd frontend
-npm run build
-
-# Бэкенд
-cd backend
-dotnet publish -c Release
-🚀 Быстрый старт (Alpha)
-Запустите локальную копию GhostCode
 
 Создайте временный профиль — автоматическая генерация псевдонима
 
@@ -178,26 +92,6 @@ P2P Мессенджер	🔄 В разработке	Базовая реали�
 Сквозное шифрование	🔄 В разработке	Тестирование протоколов
 Миграция на PostgreSQL	📅 Запланировано	После стабилизации API
 🤝 Участие в разработке
-Мы приветствуем вклад в развитие GhostCode! Особенно нужна помощь в:
-
-Тестировании P2P компонентов
-
-Оптимизации производительности
-
-Документации API и протоколов
-
-Миграции с MongoDB на PostgreSQL
-
-Процесс внесения изменений
-Форкните репозиторий
-
-Создайте ветку для вашей фичи (git checkout -b feature/amazing-feature)
-
-Зафиксируйте изменения (git commit -m 'Add amazing feature')
-
-Запушьте в ветку (git push origin feature/amazing-feature)
-
-Откройте Pull Request
 
 📄 Лицензия
 Этот проект распространяется под лицензией MIT. Подробнее см. в файле LICENSE.
