@@ -1,34 +1,219 @@
+👻 GhostCode — Анонимный P2P Мессенджер (Alpha)
+https://img.shields.io/badge/license-MIT-blue.svg
+https://img.shields.io/badge/version-alpha-violet.svg
+https://img.shields.io/badge/status-in%2520development-orange.svg
+https://img.shields.io/badge/platform-cross--platform-lightgrey.svg
 
-# GhostCode
+<p align="center"> <img src="photo_2025-11-04_19-01-45.jpg" alt="GhostCode Community" width="600" style="border-radius: 10px;"/> </p>
+GhostCode — это децентрализованный анонимный мессенджер с открытым исходным кодом, где ваша приватность является приоритетом, а не опцией. Никаких аккаунтов, никаких следов, только прямое общение.
 
-This template should help get you started developing with Vue 3 in Vite.
+⚠️ Важное примечание: GhostCode находится на стадии активной разработки и является альфа-версией. Некоторые функции могут быть не полностью реализованы или содержать ошибки. Текущая функциональность включает:
 
-## Recommended IDE Setup
+Настройка аватара и шапки профиля
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Создание и публикация постов
 
-## Customize configuration
+Комментирование публикаций
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Базовое взаимодействие в сообществе
 
-## Project Setup
+✨ Особенности
+🔒 Полная анонимность — Без регистрации, email или номера телефона
 
-```sh
+🌐 P2P-архитектура — Прямые соединения между пользователями без центральных серверов
+
+🚫 Без логов — Никаких метаданных, никакой истории, никакого отслеживания
+
+🔑 Сквозное шифрование — Военные стандарты защиты каждого сообщения
+
+⚡ Мгновенное соединение — Быстрая установка контактов по уникальным идентификаторам
+
+📱 Кроссплатформенность — Работает на Windows, macOS, Linux, Android, iOS
+
+👤 Социальные функции (в разработке) — Аватарки, шапки профилей, посты, комментарии
+
+🏗️ Архитектура
+Фронтенд
+Vue.js с Nuxt.js для SSR/SSG
+
+Tailwind CSS для стилизации
+
+Pinia для управления состоянием
+
+Vue Router для навигации
+
+JavaScript (ES6+)
+
+Бэкенд (Микросервисы)
+ASP.NET Core Minimal API (частично AOT-компиляция)
+
+.NET Aspire — оркестрация, трейсинг, health-чеки
+
+YARP — реверс-прокси и API Gateway
+
+Redis — кэширование
+
+MongoDB — текущая БД на стадии прототипирования
+
+PostgreSQL — планируемая миграция для production
+
+Общая схема
+text
+┌─────────────────────────────────────────────────────────────┐
+│                     Клиент (Vue.js/Nuxt)                    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                     ┌─────────▼──────────┐
+                     │     YARP Gateway   │
+                     └─────────┬──────────┘
+                               │
+        ┌──────────────────────┼──────────────────────┐
+        │                      │                      │
+┌───────▼──────┐      ┌───────▼──────┐      ┌────────▼────────┐
+│  Auth Service│      │  Post Service│      │  Comment Service│
+│ (.NET Core)  │      │ (.NET Core)  │      │   (.NET Core)   │
+└───────┬──────┘      └───────┬──────┘      └────────┬────────┘
+        │                      │                      │
+        └──────────┬───────────┼──────────────────────┘
+                   │           │
+            ┌──────▼───────────▼──────┐
+            │     .NET Aspire         │
+            │   (Orchestration)       │
+            └──────┬───────────┬──────┘
+                   │           │
+            ┌──────▼──┐ ┌──────▼────┐
+            │  Redis  │ │  MongoDB  │
+            │  (Cache)│ │(Proto DB) │
+            └─────────┘ └───────────┘
+🛠️ Технологический стек
+Фронтенд
+json
+{
+  "framework": "Vue.js 3 + Nuxt.js",
+  "styling": "Tailwind CSS",
+  "state": "Pinia",
+  "routing": "Vue Router",
+  "language": "JavaScript (ES6+)"
+}
+Бэкенд
+json
+{
+  "runtime": ".NET 8+",
+  "architecture": "Microservices (Minimal API)",
+  "orchestration": ".NET Aspire",
+  "gateway": "YARP",
+  "cache": "Redis",
+  "database": {
+    "current": "MongoDB (prototype)",
+    "planned": "PostgreSQL"
+  },
+  "features": ["AOT Compilation", "Health Checks", "Distributed Tracing"]
+}
+Сеть и безопасность
+WebRTC для P2P соединений
+
+XChaCha20-Poly1305 для шифрования
+
+Curve25519 для ключевого обмена
+
+QUIC для оптимизированной передачи данных
+
+📦 Установка и запуск
+Требования
+Node.js 18+
+
+.NET 8 SDK
+
+Docker (опционально, для Redis/MongoDB)
+
+Rust 1.70+ (для некоторых компонентов)
+
+Локальная разработка
+bash
+# Клонирование репозитория
+git clone https://github.com/yourusername/ghostcode.git
+cd ghostcode
+
+# Запуск инфраструктуры через Docker
+docker-compose up -d redis mongo
+
+# Запуск бэкенд-сервисов
+cd backend
+dotnet run --project Aspire.AppHost
+
+# Запуск фронтенда
+cd ../frontend
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
-```
 
-### Compile and Minify for Production
-
-```sh
+# Открыть в браузере
+# Фронтенд: http://localhost:3000
+# Бэкенд API: http://localhost:5000
+# Aspire Dashboard: http://localhost:18888
+Production сборка
+bash
+# Фронтенд
+cd frontend
 npm run build
-```
-=======
-# GhostCodeQ
 
-"# GhostCodeRespawn" 
+# Бэкенд
+cd backend
+dotnet publish -c Release
+🚀 Быстрый старт (Alpha)
+Запустите локальную копию GhostCode
+
+Создайте временный профиль — автоматическая генерация псевдонима
+
+Настройте внешний вид — загрузите аватар и шапку профиля
+
+Создайте первый пост — поделитесь мыслями с сообществом
+
+Взаимодействуйте — комментируйте посты других пользователей
+
+*Примечание: В альфа-версии P2P мессенджер находится в разработке, доступны только социальные функции.*
+
+📝 Состояние разработки
+Компонент	Статус	Примечания
+Фронтенд UI	✅ Стабильный	Vue.js + Nuxt.js
+Профили пользователей	✅ Реализовано	Аватарки, шапки
+Система постов	✅ Реализовано	Создание, просмотр
+Комментарии	✅ Реализовано	Древовидные комментарии
+P2P Мессенджер	🔄 В разработке	Базовая реализация
+Сквозное шифрование	🔄 В разработке	Тестирование протоколов
+Миграция на PostgreSQL	📅 Запланировано	После стабилизации API
+🤝 Участие в разработке
+Мы приветствуем вклад в развитие GhostCode! Особенно нужна помощь в:
+
+Тестировании P2P компонентов
+
+Оптимизации производительности
+
+Документации API и протоколов
+
+Миграции с MongoDB на PostgreSQL
+
+Процесс внесения изменений
+Форкните репозиторий
+
+Создайте ветку для вашей фичи (git checkout -b feature/amazing-feature)
+
+Зафиксируйте изменения (git commit -m 'Add amazing feature')
+
+Запушьте в ветку (git push origin feature/amazing-feature)
+
+Откройте Pull Request
+
+📄 Лицензия
+Этот проект распространяется под лицензией MIT. Подробнее см. в файле LICENSE.
+
+⚠️ Предупреждение
+GhostCode является альфа-версией и не предназначен для использования с конфиденциальными данными в production-среде. Используйте на свой страх и риск.
+
+🌐 Контакты и ссылки
+Репозиторий: github.com/yourusername/ghostcode
+
+Issues: github.com/yourusername/ghostcode/issues
+
+Discussions: github.com/yourusername/ghostcode/discussions
+
+Присоединяйтесь к нам в создании будущего приватного общения! 👻
