@@ -1,8 +1,4 @@
 👻 GhostCode — Анонимный P2P Мессенджер (Alpha)
-https://img.shields.io/badge/license-MIT-blue.svg
-https://img.shields.io/badge/version-alpha-violet.svg
-https://img.shields.io/badge/status-in%2520development-orange.svg
-https://img.shields.io/badge/platform-cross--platform-lightgrey.svg
 
 <p align="center"> <img src="photo_2025-11-04_19-01-45.jpg" alt="GhostCode Community" width="600" style="border-radius: 10px;"/> </p>
 GhostCode — это децентрализованный анонимный мессенджер с открытым исходным кодом, где ваша приватность является приоритетом, а не опцией. Никаких аккаунтов, никаких следов, только прямое общение.
